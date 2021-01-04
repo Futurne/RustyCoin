@@ -5,6 +5,7 @@ use std::convert::TryInto;
 /// A node sending a message should always start his message with this structure.
 ///
 /// Note: The `msg_type` is a field representing 12 ascii characters.
+#[derive(PartialEq, Debug)]
 struct Header {
     magic: u32,
     msg_type: String,  // Chars can only be ascii 8-bit characters.
@@ -12,7 +13,7 @@ struct Header {
 }
 
 impl Header {
-    pub fn new(magic: u32, msg_type: String, length: u64)
+    pub fn new(magic: u32, msg_type: &str, length: u64)
         -> Result<Self, &'static str> {
         if !msg_type.is_ascii() {
             return Err("Message type can only contains ascii characters !");
@@ -22,7 +23,7 @@ impl Header {
             return Err("Message type can not be greater than 12 characters !");
         }
 
-        Ok(Header{magic, msg_type, length})
+        Ok(Header{magic, msg_type: msg_type.into(), length})
     }
 }
 
@@ -30,8 +31,8 @@ impl TryFrom<Vec<u8>> for Header {
     type Error = &'static str;
 
     fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
-        if bytes.len() < 4 + 12 + 8 {
-            return Err("Vec is not big enough to be parsed into Header");
+        if bytes.len() != 4 + 12 + 8 {
+            return Err("Vec has to be of len 24 to be parsed into Header");
         }
 
         let (magic, bytes) = bytes.split_at(4);
@@ -63,5 +64,17 @@ impl From<Header> for Vec<u8> {
         bytes.extend(&u64::to_be_bytes(header.length));
 
         bytes
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bytes_from_header() {
+        let header = Header::new(42, "whoami", 0).unwrap();
+        let bytes = Vec::<u8>::from(header);
+        assert_eq!(Header::try_from(bytes), Ok(Header::new(42, "whoami", 0).unwrap()));
     }
 }
