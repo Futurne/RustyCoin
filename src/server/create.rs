@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 use std::io;
 use std::net::SocketAddr;
+use std::time::Duration;
 
 use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Token};
@@ -62,7 +63,7 @@ impl Server {
 
         // Main loop
         loop {
-            self.poll.poll(&mut events, None)?;
+            self.poll.poll(&mut events, Some(Duration::from_secs(5)))?;
 
             for event in events.iter() {
                 match event.token() {
@@ -70,7 +71,14 @@ impl Server {
                     token => {
                         let done = if let Some(node) = self.connections.get_mut(&token) {
                             // The event concerns an already connected node.
-                            logic::handle_connection_event(self.poll.registry(), node, event)?
+                            match logic::handle_connection_event(self.poll.registry(), node, event) {
+                                Ok(result) => result,
+                                Err(_) => {
+                                    println!("Error at node {}. Closing the connection.",
+                                        node.connection.peer_addr().unwrap());
+                                    true  // Close the connection.
+                                }
+                            }
                         } else {
                             // Sporadic events happen, we can safely ignore them.
                             false
@@ -85,17 +93,19 @@ impl Server {
         }
     }
 
+    /// Connects the server to a specified node.
+    /// Registers the node.
     pub fn connect(&mut self, addr: SocketAddr) -> io::Result<()> {
         let connection = TcpStream::connect(addr)?;
         println!("Connected to {}", connection.peer_addr().unwrap());
 
         // Now register the node
-        let addr = connection.peer_addr().unwrap();
-        self.register_node(connection, addr, false)?;
+        self.register_node(connection, false)?;
         Ok(())
     }
 
 
+    /// Accepts and register a new connection.
     fn new_connection(&mut self) -> io::Result<()> {
         loop {
             // Received an event for the TCP server socket, which
@@ -117,22 +127,26 @@ impl Server {
             };
 
             println!("Accepted connection from: {}", address);
-            self.register_node(connection, address, true)?;
+            self.register_node(connection, true)?;
         }
 
         Ok(())
     }
 
-    fn register_node(&mut self, mut connection: TcpStream, address: SocketAddr, is_ingoing: bool) -> io::Result<()> {
+    /// Add a node to the HashMap.
+    /// Register the node in the poll for future events.
+    fn register_node(&mut self, mut connection: TcpStream, is_ingoing: bool)
+            -> io::Result<()> {
         let token = self.next_token();
         self.poll.registry()
             .register(&mut connection, token, Interest::READABLE.add(Interest::WRITABLE))?;
 
-        let node = Node{connection, address, buffer: Vec::new(), is_ingoing};
+        let node = Node{connection, buffer: Vec::new(), is_ingoing};
         self.connections.insert(token, node);
         Ok(())
     }
 
+    /// Creates a unique token.
     fn next_token(&mut self) -> Token {
         let next = self.unique_token.0;
         self.unique_token.0 += 1;
