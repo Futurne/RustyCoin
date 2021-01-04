@@ -8,8 +8,6 @@ use super::super::node::Node;
 
 
 const DATA: &[u8] = b"Hello world!\n";
-const PING: &[u8] = b"Ping !\n";
-const PONG: &[u8] = b"Pong !\n";
 
 pub fn handle_connection_event(
     registry: &Registry,
