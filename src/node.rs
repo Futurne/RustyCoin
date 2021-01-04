@@ -1,9 +1,12 @@
 use std::net::SocketAddr;
 use mio::net::TcpStream;
 
-struct Node {
-    connection: TcpStream,
-    address: SocketAddr,
-    buffer: Vec<u8>,
-    is_ingoing: bool,
+pub struct Node {
+    pub connection: TcpStream,
+    pub address: SocketAddr,
+    pub buffer: Vec<u8>,
+    pub is_ingoing: bool,
+}
+
+impl Node {
 }
