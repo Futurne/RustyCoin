@@ -1,8 +1,10 @@
 // Initialize and handle the main events.
-use mio::net::TcpListener;
-use mio::{Events, Interest, Poll, Token};
 use std::collections::HashMap;
 use std::io;
+use std::net::SocketAddr;
+
+use mio::net::{TcpListener, TcpStream};
+use mio::{Events, Interest, Poll, Token};
 
 use super::logic;
 use super::super::node::Node;
@@ -56,6 +58,8 @@ impl Server {
         // Create storage for events.
         let mut events = Events::with_capacity(128);
 
+        println!("Server launched on {}", self.listener.local_addr().unwrap());
+
         // Main loop
         loop {
             self.poll.poll(&mut events, None)?;
@@ -81,11 +85,22 @@ impl Server {
         }
     }
 
+    pub fn connect(&mut self, addr: SocketAddr) -> io::Result<()> {
+        let connection = TcpStream::connect(addr)?;
+        println!("Connected to {}", connection.peer_addr().unwrap());
+
+        // Now register the node
+        let addr = connection.peer_addr().unwrap();
+        self.register_node(connection, addr, false)?;
+        Ok(())
+    }
+
+
     fn new_connection(&mut self) -> io::Result<()> {
         loop {
             // Received an event for the TCP server socket, which
             // indicates we can accept an connection.
-            let (mut connection, address) = match self.listener.accept() {
+            let (connection, address) = match self.listener.accept() {
                 Ok((connection, address)) => (connection, address),
                 Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                     // If we get a `WouldBlock` error we know our
@@ -102,18 +117,19 @@ impl Server {
             };
 
             println!("Accepted connection from: {}", address);
-
-            let token = self.next_token();
-            self.poll.registry().register(
-                &mut connection,
-                token,
-                Interest::READABLE.add(Interest::WRITABLE),
-            )?;
-
-            let node = Node{connection, address, buffer: Vec::new(), is_ingoing: true};
-            self.connections.insert(token, node);
+            self.register_node(connection, address, true)?;
         }
 
+        Ok(())
+    }
+
+    fn register_node(&mut self, mut connection: TcpStream, address: SocketAddr, is_ingoing: bool) -> io::Result<()> {
+        let token = self.next_token();
+        self.poll.registry()
+            .register(&mut connection, token, Interest::READABLE.add(Interest::WRITABLE))?;
+
+        let node = Node{connection, address, buffer: Vec::new(), is_ingoing};
+        self.connections.insert(token, node);
         Ok(())
     }
 

@@ -8,3 +8,11 @@ edition = "2018"
 
 [dependencies]
 mio = {version = "0.7", features = ["os-poll", "tcp"]}
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
