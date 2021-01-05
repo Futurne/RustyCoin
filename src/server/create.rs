@@ -8,7 +8,7 @@ use mio::net::{TcpListener, TcpStream};
 use mio::{Events, Interest, Poll, Token};
 
 use super::logic;
-use super::super::node::Node;
+use crate::node::Node;
 
 /// Representation of the server.
 ///
@@ -58,12 +58,13 @@ impl Server {
     pub fn launch(&mut self) -> io::Result<()> {
         // Create storage for events.
         let mut events = Events::with_capacity(128);
+        const WAITING_TIME: u8 = 5;
 
         println!("Server launched on {}", self.listener.local_addr().unwrap());
 
         // Main loop
         loop {
-            self.poll.poll(&mut events, Some(Duration::from_secs(5)))?;
+            self.poll.poll(&mut events, Some(Duration::from_secs(WAITING_TIME.into())))?;
 
             for event in events.iter() {
                 match event.token() {
@@ -88,6 +89,12 @@ impl Server {
                         }
                     }
                 }
+            }
+            // End of events handling
+            // We now scan all nodes and do the routines
+            for node in self.connections.values_mut() {
+                node.delta_time(WAITING_TIME);
+                node.routine();
             }
         }
     }

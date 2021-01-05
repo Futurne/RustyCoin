@@ -4,26 +4,17 @@ use mio::event::Event;
 use std::io::{self, Read, Write};
 use std::str::from_utf8;
 
-use super::super::node::Node;
-
-
-const DATA: &[u8] = b"Hello world!\n";
+use crate::node::Node;
 
 pub fn handle_connection_event(
     registry: &Registry,
     node: &mut Node,
     event: &Event,
 ) -> io::Result<bool> {
-    if !event.is_writable() {
-        // We close the connection.
-        return Err(io::ErrorKind::InvalidInput.into());
-    }
-
-    node.send_ping()?;
-
     let mut connection_closed = false;
     let mut received_data = vec![0; 4096];
     let mut bytes_read = 0;
+
     // We can (maybe) read from the connection.
     loop {
         match node.connection.read(&mut received_data[bytes_read..]) {

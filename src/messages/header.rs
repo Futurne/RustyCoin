@@ -7,9 +7,9 @@ use std::convert::TryInto;
 /// Note: The `msg_type` is a field representing 12 ascii characters.
 #[derive(PartialEq, Debug)]
 pub struct Header {
-    magic: u32,
+    pub magic: u32,
     msg_type: String,  // Chars can only be ascii 8-bit characters.
-    length: u64
+    pub length: u64
 }
 
 pub const HEADER_SIZE: usize = 24;
@@ -26,6 +26,24 @@ impl Header {
         }
 
         Ok(Header{magic, msg_type: msg_type.into(), length})
+    }
+
+    pub fn read_buffer(buffer: &mut Vec<u8>) -> Option<(Self, Vec<u8>)> {
+        if buffer.len() < HEADER_SIZE {
+            return None;
+        }
+
+        let (buffer_header, overload) = buffer.split_at(HEADER_SIZE);
+        let buffer_header: Vec<u8> = buffer_header.into();
+        if let Ok(header) = Header::try_from(buffer_header) {
+            Some((header, overload.into()))
+        } else {
+            None
+        }
+    }
+
+    pub fn msg<'a>(&'a self) -> &'a String {
+        &self.msg_type
     }
 }
 
