@@ -6,11 +6,13 @@ use std::convert::TryInto;
 ///
 /// Note: The `msg_type` is a field representing 12 ascii characters.
 #[derive(PartialEq, Debug)]
-struct Header {
+pub struct Header {
     magic: u32,
     msg_type: String,  // Chars can only be ascii 8-bit characters.
     length: u64
 }
+
+pub const HEADER_SIZE: usize = 24;
 
 impl Header {
     pub fn new(magic: u32, msg_type: &str, length: u64)
@@ -31,7 +33,7 @@ impl TryFrom<Vec<u8>> for Header {
     type Error = &'static str;
 
     fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
-        if bytes.len() != 4 + 12 + 8 {
+        if bytes.len() != HEADER_SIZE {
             return Err("Vec has to be of len 24 to be parsed into Header");
         }
 

@@ -73,9 +73,8 @@ impl Server {
                             // The event concerns an already connected node.
                             match logic::handle_connection_event(self.poll.registry(), node, event) {
                                 Ok(result) => result,
-                                Err(_) => {
-                                    println!("Error at node {}. Closing the connection.",
-                                        node.connection.peer_addr().unwrap());
+                                Err(err) => {
+                                    println!("Closing the connection: {}", err);
                                     true  // Close the connection.
                                 }
                             }
@@ -141,7 +140,7 @@ impl Server {
         self.poll.registry()
             .register(&mut connection, token, Interest::READABLE.add(Interest::WRITABLE))?;
 
-        let node = Node{connection, buffer: Vec::new(), is_ingoing};
+        let node = Node::new(connection, is_ingoing);
         self.connections.insert(token, node);
         Ok(())
     }
