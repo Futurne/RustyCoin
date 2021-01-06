@@ -5,13 +5,13 @@ use std::net::{IpAddr, Ipv6Addr};
 use super::ByteSize;
 
 #[derive(Debug, PartialEq)]
-struct Address {
+pub struct Address {
     timestamp: u64,
     addr: Ipv6Addr,
     port: u16,
 }
 
-const ADDRESS_SIZE: usize = 8 + 16 + 2;
+pub const ADDRESS_SIZE: usize = 8 + 16 + 2;
 
 impl Address {
     pub fn new(timestamp: u64, addr: IpAddr, port: u16) -> Self {

@@ -1,0 +1,8 @@
+use std::convert::TryFrom;
+
+use super::var_uint::VaUint;
+
+pub struct Whoami {
+    version: u32,
+
+}

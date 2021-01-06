@@ -4,7 +4,7 @@ use super::var_uint::VarUint;
 use super::ByteSize;
 
 #[derive(Debug, PartialEq)]
-struct VarStr {
+pub struct VarStr {
     length: VarUint,
     string_value: String,
 }
