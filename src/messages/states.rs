@@ -12,13 +12,19 @@ pub enum WhoamiSate {
 
 #[derive(Debug, PartialEq)]
 pub enum CurrentAction {
-    Nothing,
+    WaitingHeader,  // Default mode : the node is waiting for a new message.
 }
 
 #[derive(PartialEq)]
 pub enum PingType {
     Ping,
     Pong,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PingState {
+    Sent,
+    Ack,
 }
 
 pub const PING_MSG: &str = "2plus2is4";

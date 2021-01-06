@@ -35,7 +35,7 @@ impl Header {
 
         let (buffer_header, overload) = buffer.split_at(HEADER_SIZE);
         let buffer_header: Vec<u8> = buffer_header.into();
-        if let Ok(header) = Header::try_from(buffer_header) {
+        if let Ok(header) = Header::try_from(buffer_header.as_slice()) {
             Some((header, overload.into()))
         } else {
             None
@@ -47,12 +47,12 @@ impl Header {
     }
 }
 
-impl TryFrom<Vec<u8>> for Header {
+impl TryFrom<&[u8]> for Header {
     type Error = &'static str;
 
-    fn try_from(bytes: Vec<u8>) -> Result<Self, Self::Error> {
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         if bytes.len() != HEADER_SIZE {
-            return Err("Vec has to be of len 24 to be parsed into Header");
+            return Err("Slice has to be of len 24 to be parsed into Header");
         }
 
         let (magic, bytes) = bytes.split_at(4);
@@ -92,9 +92,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_bytes_from_header() {
+    fn test_convert_header() {
         let header = Header::new(42, "whoami", 0).unwrap();
         let bytes = Vec::<u8>::from(header);
-        assert_eq!(Header::try_from(bytes), Ok(Header::new(42, "whoami", 0).unwrap()));
+        assert_eq!(Header::try_from(bytes.as_slice()), Ok(Header::new(42, "whoami", 0).unwrap()));
     }
 }

@@ -1,0 +1,41 @@
+// Some variables in the messages structures are
+// special structures, defined here.
+use num_traits::sign::Unsigned;
+use num_traits::cast::NumCast;
+
+#[derive(Debug)]
+enum VarUint {
+    small(u8),
+    median(u16),
+    large(u32),
+    big(u64),
+}
+
+impl VarUint {
+    fn new (positive: impl Unsigned + NumCast + Copy) -> Option<Self> {
+        if let Some(num) = NumCast::from(positive) {
+            Some(VarUint::small(num))
+        } else if let Some(num) = NumCast::from(positive) {
+            Some(VarUint::median(num))
+        } else if let Some(num) = NumCast::from(positive) {
+            Some(VarUint::large(num))
+        } else if let Some(num) = NumCast::from(positive) {
+            Some(VarUint::big(num))
+        } else {
+            None
+        }
+    }
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_varuint() {
+        let pos: u64 = 8;
+        assert_eq!(VarUint::new(pos), Some(VarUint::small(8)));
+    }
+}
