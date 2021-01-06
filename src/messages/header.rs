@@ -1,6 +1,9 @@
 use std::convert::TryFrom;
 use std::convert::TryInto;
 
+use super::ByteSize;
+
+
 /// Header of a message.
 /// A node sending a message should always start his message with this structure.
 ///
@@ -44,6 +47,12 @@ impl Header {
 
     pub fn msg<'a>(&'a self) -> &'a String {
         &self.msg_type
+    }
+}
+
+impl ByteSize for Header {
+    fn byte_size(&self) -> usize {
+        4 + 12 + 8
     }
 }
 
