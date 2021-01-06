@@ -72,7 +72,7 @@ impl Server {
                     token => {
                         let done = if let Some(node) = self.connections.get_mut(&token) {
                             // The event concerns an already connected node.
-                            match logic::handle_connection_event(self.poll.registry(), node, event) {
+                            match logic::handle_incoming_messages(node) {
                                 Ok(result) => result,
                                 Err(err) => {
                                     println!("Closing the connection: {}", err);
@@ -90,8 +90,9 @@ impl Server {
                     }
                 }
             }
-            // End of events handling
-            // We now scan all nodes and do the routines
+            // End of events handling.
+
+            // We now scan all nodes and do the routines.
             for node in self.connections.values_mut() {
                 node.delta_time(WAITING_TIME);
                 node.routine();

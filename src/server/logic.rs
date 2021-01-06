@@ -1,15 +1,10 @@
 // How the server is supposed to act
-use mio::{Registry, Interest};
-use mio::event::Event;
-use std::io::{self, Read, Write};
-use std::str::from_utf8;
+use std::io::{self, Read};
 
 use crate::node::Node;
 
-pub fn handle_connection_event(
-    registry: &Registry,
+pub fn handle_incoming_messages(
     node: &mut Node,
-    event: &Event,
 ) -> io::Result<bool> {
     let mut connection_closed = false;
     let mut received_data = vec![0; 4096];
@@ -41,12 +36,6 @@ pub fn handle_connection_event(
 
     if bytes_read != 0 {
         let received_data = &received_data[..bytes_read];
-        if let Ok(str_buf) = from_utf8(received_data) {
-            println!("Received data: {}", str_buf.trim_end());
-        } else {
-            println!("Received (none UTF-8) data: {:?}", received_data);
-        }
-
         node.buffer.extend(received_data);
         node.handle_buffer();
     }
