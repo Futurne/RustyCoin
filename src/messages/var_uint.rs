@@ -3,8 +3,10 @@
 use std::convert::TryFrom;
 use std::convert::TryInto;
 
+use super::ByteSize;
+
 #[derive(Debug, PartialEq)]
-enum VarUint {
+pub enum VarUint {
     Small(u8),
     Median(u16),
     Large(u32),
@@ -12,7 +14,7 @@ enum VarUint {
 }
 
 impl VarUint {
-    fn new(num: u64) -> Self {
+    pub fn new(num: u64) -> Self {
         if num <= 252 {
             VarUint::Small(num.try_into().unwrap())
         } else if num <= 0xFFFF {
@@ -24,7 +26,18 @@ impl VarUint {
         }
     }
 
-    pub fn byte_size(&self) -> usize {
+    pub fn value(&self) -> u64 {
+        match self {
+            Self::Small(num) => *num as u64,
+            Self::Median(num) => *num as u64,
+            Self::Large(num) => *num as u64,
+            Self::Big(num) => *num,
+        }
+    }
+}
+
+impl ByteSize for VarUint {
+    fn byte_size(&self) -> usize {
         match self {
             Self::Small(_) => 1,
             Self::Median(_) => 3,
