@@ -7,6 +7,6 @@ pub mod var_str;
 
 pub mod states;
 
-trait ByteSize {
+pub trait ByteSize {
     fn byte_size(&self) -> usize;
 }
