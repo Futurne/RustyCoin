@@ -13,7 +13,7 @@ pub enum WhoamiSate {
 pub const WHOAMI_MSG: &str = "whoami";
 pub const WHOAMIACK_MSG: &str = "whoamiack";
 
-pub const VERSION: u32 = 1;
+pub const VERSION: u32 = 0;
 pub const SERVICES: [&str; 1] = ["node"];
 
 
@@ -40,7 +40,7 @@ pub const PONG_MSG: &str = "minus1thats3";
 
 /// A ping message is supposed to be
 /// sent and received each `PING_CALLBACK` secs.
-pub const PING_CALLBACK: u8 = 42;
+pub const PING_CALLBACK: u8 = 12;
 pub const LAST_SEEN_THRESHOLD: u32 = 300;
 
 /// Magic number, used in the header

@@ -62,12 +62,15 @@ impl Node {
     pub fn routine(&mut self) {
         if self.last_ping_sent == 0 {
             self.send_ping(PingType::Ping).unwrap();
+            println!("Ping sent");
+
             self.last_ping_sent = PING_CALLBACK;
             self.ping_state = PingState::Sent;
         }
 
-        if self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
+        if !self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
             self.send_whoami().expect("Erreur while sending whoami: ");
+            println!("Whoami sent");
         }
 
         self.is_valid = self.whoami_state.0 == WhoamiSate::Ack
@@ -94,9 +97,11 @@ impl Node {
             match header.msg() {
                 msg if msg == PING_MSG => {
                     self.send_ping(PingType::Pong).unwrap();
+                    println!("Ping received");
                 }
                 msg if msg == PONG_MSG => {
                     self.ping_state = PingState::Ack;
+                    println!("Pong received");
                 },
                 msg if msg == WHOAMI_MSG => {
                     self.current_action = CurrentAction::WaitingWhoami(header.length);
@@ -106,7 +111,7 @@ impl Node {
                     self.whoami_state.0 = WhoamiSate::Ack;
                     println!("Whoamiack received");
                 },
-                _ => (),
+                msg => println!("Header unknown: {}", msg),
             }
 
             false
@@ -132,7 +137,8 @@ impl Node {
         self.current_action = CurrentAction::WaitingHeader;
 
         if whoami.version != VERSION {
-            println!("Different versions !");
+            println!("Different versions ! ({} vs {})",
+                whoami.version, VERSION);
         }
         self.send_whoamiack().expect("Error while sending whoamiack: ");
 
