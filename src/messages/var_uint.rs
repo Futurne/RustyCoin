@@ -93,7 +93,11 @@ impl TryFrom<&[u8]> for VarUint {
 impl From<VarUint> for Vec<u8> {
     fn from(var: VarUint) -> Self {
         match var {
-            VarUint::Small(num) => u8::to_be_bytes(num).into(),
+            VarUint::Small(num) => {
+                let mut bytes = Vec::new();
+                bytes.extend(u8::to_be_bytes(num).iter());
+                bytes
+            },
             VarUint::Median(num) => {
                 let mut bytes: Vec<u8> = vec![0xFD];
                 bytes.extend(&u16::to_be_bytes(num));

@@ -68,7 +68,8 @@ impl TryFrom<&[u8]> for Whoami {
 
 impl From<Whoami> for Vec<u8> {
     fn from(whoami: Whoami) -> Self {
-        let mut bytes: Vec<u8> = Vec::from(u32::to_be_bytes(whoami.version));
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend(u32::to_be_bytes(whoami.version).iter());
         bytes.extend(Vec::<u8>::from(whoami.from));
         bytes.extend(Vec::<u8>::from(whoami.service_count));
         for service in whoami.services {
