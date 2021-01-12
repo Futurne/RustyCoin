@@ -8,11 +8,19 @@ use crate::messages::whoami::Whoami;
 use crate::messages::address::Address;
 use crate::messages::ByteSize;
 
+/// Represents an exterior node connected to
+/// this server.
+///
+/// All sort of variables are used to precisely
+/// define the state of the connection and the informations
+/// gathered about this connection.
+///
+/// The logic behind the protocol is also implemented here.
 #[derive(Debug)]
 pub struct Node {
     pub connection: TcpStream,
     pub buffer: Vec<u8>,
-    pub is_ingoing: bool,
+    pub is_ingoing: bool,  // True if the remote client engaged the connection, false otherwise.
     pub is_valid: bool,  // True if the node is handling all the whoami and ping messages well.
 
     whoami_state: (WhoamiSate, WhoamiSate),  // (local, remote)
@@ -25,6 +33,8 @@ pub struct Node {
 }
 
 impl Node {
+    /// Only needs the connection and the information
+    /// of who did the connection.
     pub fn new(connection: TcpStream, is_ingoing: bool)
         -> Self {
         Node {
@@ -192,6 +202,7 @@ impl Node {
         Ok(())
     }
 
+    /// Actualize the timed variables.
     pub fn delta_time(&mut self, delta: u8) {
         self.last_ping_recv = if delta < self.last_ping_recv {
             self.last_ping_recv - delta
