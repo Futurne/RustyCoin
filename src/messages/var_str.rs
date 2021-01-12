@@ -16,6 +16,10 @@ impl VarStr {
             string_value,
         }
     }
+
+    pub fn value(&self) -> String {
+        self.string_value.clone()
+    }
 }
 
 impl ByteSize for VarStr {

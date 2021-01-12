@@ -9,9 +9,9 @@ use super::ByteSize;
 #[derive(Debug, PartialEq)]
 pub struct Whoami {
     pub version: u32,
-    from: Address,
-    service_count: VarUint,
-    services: Vec<VarStr>,
+    pub from: Address,
+    pub service_count: VarUint,
+    pub services: Vec<VarStr>,
 }
 
 impl Whoami {

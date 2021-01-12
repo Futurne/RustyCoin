@@ -41,7 +41,7 @@ pub const PONG_MSG: &str = "minus1thats3";
 /// A ping message is supposed to be
 /// sent and received each `PING_CALLBACK` secs.
 pub const PING_CALLBACK: u8 = 42;
-pub const LAST_SEEN_THRESHOLD: u32 = 300;
+pub const LAST_SEEN_THRESHOLD: u32 = 10_800;  // 3 hours in secs
 
 /// Magic number, used in the header
 pub const MAGIC: u32 = 422021;

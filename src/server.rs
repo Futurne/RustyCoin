@@ -12,6 +12,7 @@ use crate::node::Node;
 /// Representation of the server.
 ///
 /// A connected node is registered into the HashMap<Token, Node>.
+#[derive(Debug)]
 pub struct Server {
     poll: Poll,
     listener: TcpListener,
@@ -158,6 +159,12 @@ impl Server {
         let next = self.unique_token.0;
         self.unique_token.0 += 1;
         Token(next)
+    }
+
+    pub fn get_valid_nodes<'a>(&'a self) -> Vec<&'a Node> {
+        self.connections.values()
+            .filter(|n| n.is_valid)
+            .collect()
     }
 }
 

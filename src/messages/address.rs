@@ -4,7 +4,7 @@ use std::net::{IpAddr, Ipv6Addr};
 
 use super::ByteSize;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Address {
     timestamp: u64,
     addr: Ipv6Addr,

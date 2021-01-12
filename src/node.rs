@@ -23,8 +23,11 @@ pub struct Node {
     pub is_ingoing: bool,  // True if the remote client engaged the connection, false otherwise.
     pub is_valid: bool,  // True if the node is handling all the whoami and ping messages well.
 
-    whoami_state: (WhoamiSate, WhoamiSate),  // (local, remote)
     current_action: CurrentAction,
+
+    whoami_state: (WhoamiSate, WhoamiSate),  // (local, remote)
+    pub address: Option<Address>,  // Given by the whoami message
+    services: Vec<String>,
 
     last_ping_sent: u8,
     last_ping_recv: u8,
@@ -43,8 +46,11 @@ impl Node {
             is_ingoing,
             is_valid: false,
 
-            whoami_state: (WhoamiSate::Unkn, WhoamiSate::Unkn),
             current_action: CurrentAction::WaitingHeader,
+
+            whoami_state: (WhoamiSate::Unkn, WhoamiSate::Unkn),
+            address: None,
+            services: Vec::new(),
 
             last_ping_sent: PING_CALLBACK,
             last_ping_recv: PING_CALLBACK,
@@ -72,7 +78,6 @@ impl Node {
     pub fn routine(&mut self) {
         if self.last_ping_sent == 0 {
             self.send_ping(PingType::Ping).unwrap();
-            println!("Ping sent");
 
             self.last_ping_sent = PING_CALLBACK;
             self.ping_state = PingState::Sent;
@@ -80,7 +85,6 @@ impl Node {
 
         if !self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
             self.send_whoami().expect("Error while sending whoami: ");
-            println!("Whoami sent");
         }
 
         self.is_valid = self.whoami_state.0 == WhoamiSate::Ack
@@ -107,19 +111,15 @@ impl Node {
             match header.msg() {
                 msg if msg == PING_MSG => {
                     self.send_ping(PingType::Pong).unwrap();
-                    println!("Ping received");
                 }
                 msg if msg == PONG_MSG => {
                     self.ping_state = PingState::Ack;
-                    println!("Pong received");
                 },
                 msg if msg == WHOAMI_MSG => {
                     self.current_action = CurrentAction::WaitingWhoami(header.length);
-                    println!("Whoami received");
                 },
                 msg if msg == WHOAMIACK_MSG => {
                     self.whoami_state.0 = WhoamiSate::Ack;
-                    println!("Whoamiack received");
                 },
                 msg => println!("Header unknown: {}", msg),
             }
@@ -135,8 +135,6 @@ impl Node {
     /// Parse the Whoami buffer (if big enough).
     /// Send a whoamiack back when everyting is good.
     /// Return true if we need to stop and wait for the buffer to be filled.
-    ///
-    /// TODO: Make use of the infos contained in the Whoami message.
     fn do_whoami(&mut self, length: usize) -> bool {
         if self.buffer.len() < length {
             return true;  // Buffer not big enough for the moment
@@ -155,6 +153,13 @@ impl Node {
         if self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
             self.send_whoami().expect("Error while sending whoami: ");
         }
+
+        // Process & save infos
+        self.address = Some(whoami.from.clone());
+        self.services = whoami.services
+            .iter()
+            .map(|s| s.value())
+            .collect();
 
         false
     }
