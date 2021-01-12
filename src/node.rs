@@ -69,7 +69,7 @@ impl Node {
         }
 
         if !self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
-            self.send_whoami().expect("Erreur while sending whoami: ");
+            self.send_whoami().expect("Error while sending whoami: ");
             println!("Whoami sent");
         }
 
@@ -142,7 +142,7 @@ impl Node {
         }
         self.send_whoamiack().expect("Error while sending whoamiack: ");
 
-        if !self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
+        if self.is_ingoing && self.whoami_state.0 == WhoamiSate::Unkn {
             self.send_whoami().expect("Error while sending whoami: ");
         }
 

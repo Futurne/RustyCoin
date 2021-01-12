@@ -2,7 +2,7 @@ mod server;
 mod node;
 mod messages;
 
-use server::create::Server;
+use server::Server;
 
 fn main() {
     let mut client = Server::new("127.0.0.1:10000").unwrap();

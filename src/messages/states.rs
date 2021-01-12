@@ -40,7 +40,7 @@ pub const PONG_MSG: &str = "minus1thats3";
 
 /// A ping message is supposed to be
 /// sent and received each `PING_CALLBACK` secs.
-pub const PING_CALLBACK: u8 = 12;
+pub const PING_CALLBACK: u8 = 42;
 pub const LAST_SEEN_THRESHOLD: u32 = 300;
 
 /// Magic number, used in the header
