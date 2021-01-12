@@ -101,6 +101,7 @@ impl Server {
 
     /// Connects the server to a specified node.
     /// Registers the node.
+    #[allow(dead_code)]
     pub fn connect(&mut self, addr: SocketAddr) -> io::Result<()> {
         let connection = TcpStream::connect(addr)?;
         println!("Connected to {}", connection.peer_addr().unwrap());
